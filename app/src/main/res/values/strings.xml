@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Shipr ToolBox</string>
+    <string name="send_button_label">send</string>
+    <string name="sign_out">sign out</string>
 </resources>

@@ -111,6 +111,14 @@
           }
         },
         {
+          "client_id": "341577014493-mgf9lkpsq4vap8n1shc04o8tudt5hur8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "tech.shipr.toolboxdev",
+            "certificate_hash": "31be73ffa41d7a859ec113782ebbbf5d880737ab"
+          }
+        },
+        {
           "client_id": "341577014493-3i7ivcde24q7s47mp0frj6qtf3u2v6gn.apps.googleusercontent.com",
           "client_type": 3
         }
