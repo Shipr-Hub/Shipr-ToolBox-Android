@@ -1,6 +1,8 @@
 package tech.shipr.toolboxdev.model;
 
-public class Tool {
+import java.io.Serializable;
+
+public class Tool implements Serializable {
 
     private String text;
     private String name;

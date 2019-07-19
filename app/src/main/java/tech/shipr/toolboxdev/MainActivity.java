@@ -5,8 +5,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
+import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -24,10 +27,12 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import tech.shipr.toolboxdev.model.Tool;
 import tech.shipr.toolboxdev.model.User;
@@ -45,22 +50,41 @@ public class MainActivity extends AppCompatActivity {
     ExpandableListView allCatExpandableListView;
     ExpandableListAdapter allCatExpandableListAdapter;
 
+    GridView gv;
+    ArrayAdapter<String> gridViewArrayAdapter;
+    List<String> toolList;
+    List<Tool> clickToolList;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        gv = findViewById(R.id.favouriteAppsGrid);
         AllCalLayout = findViewById(R.id.allCategoriesContainer);
         mFirebaseAuth = FirebaseAuth.getInstance();
         startAuthListener();
         db = FirebaseFirestore.getInstance();
         loadAllCat(AllCalLayout);
-        loadFavCategories();
+        setupToolAdapter();
+        loadFavCategoriesAndProducts();
+
+        gv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View v,
+                                    int position, long id) {
+Tool tool = clickToolList.get(position);
+                Intent intent = new Intent(MainActivity.this, ToolViewActivity.class);
+                intent.putExtra("tool", (Serializable) tool);
+                startActivity(intent);
+            }
+        });
 
 
     }
 
-    private void loadFavCategories() {
+    private void loadFavCategoriesAndProducts() {
         final DocumentReference docRef = db.collection("users").document("123");
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -69,11 +93,19 @@ public class MainActivity extends AppCompatActivity {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         User user = document.toObject(User.class);
-                        Object favcat = user.getFavcat();
-                        ArrayList l = (ArrayList) favcat;
 
-                        for (int i = 0; i < l.size(); i++) {
-                            loadData(l.get(i).toString(), (LinearLayout) findViewById(R.id.favouriteCategoriesContainer));
+                        ArrayList favcat = (ArrayList) user.getFavcat();
+                        if (favcat != null && favcat.size() > 0) {
+                            for (int i = 0; i < favcat.size(); i++) {
+                                addCat(favcat.get(i).toString(), (LinearLayout) findViewById(R.id.favouriteCategoriesContainer));
+                            }
+                        }
+
+                        ArrayList favtool = (ArrayList) user.getFavtool();
+                        if (favtool != null && favtool.size() > 0) {
+                            for (int i = 0; i < favtool.size(); i++) {
+                                loadTool((DocumentReference) favtool.get(i));
+                            }
                         }
 
 
@@ -87,6 +119,42 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void loadTool(DocumentReference ref) {
+        final DocumentReference docRef = ref;
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        Log.d(TAG, "DocumentSnapshot data: " + document.getData());
+                        Tool tool = document.toObject(Tool.class);
+                        addTool(tool);
+                    } else {
+                        Log.d(TAG, "No such document");
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+            }
+        });
+    }
+
+    private void setupToolAdapter() {
+        toolList = new ArrayList<String>();
+        clickToolList = new ArrayList<Tool>();
+        gridViewArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, toolList);
+        gv.setAdapter(gridViewArrayAdapter);
+
+    }
+
+    private void addTool(Tool tool) {
+        toolList.add(toolList.size(), tool.getName());
+        clickToolList.add(clickToolList.size(), tool);
+        gridViewArrayAdapter.notifyDataSetChanged();
+    }
+
+
     private void loadAllCat(final LinearLayout layout) {
         db.collection("cat")
                 .get()
@@ -97,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 final String cat = document.getId();
                                 Log.d(TAG, cat + " => " + document.getData());
-                                loadData(cat, layout);
+                                addCat(cat, layout);
                             }
                         } else {
                             Log.w(TAG, "Error getting documents.", task.getException());
@@ -106,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void loadData(final String cat, final LinearLayout layout) {
+    private void addCat(final String cat, final LinearLayout layout) {
 
         db.collection("cat").document(cat).collection("products")
                 .get()
@@ -169,11 +237,10 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
                                     //   Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " -> " + expandableListDetail.get(allCatExpandableListTitle.get(groupPosition)).get(childPosition), Toast.LENGTH_SHORT).show();
-                                    Tool tool = expandableListDetail.get(allCatExpandableListTitle.get(groupPosition)).get(childPosition);
+                                    Tool tool = Objects.requireNonNull(expandableListDetail.get(allCatExpandableListTitle.get(groupPosition))).get(childPosition);
                                     Toast.makeText(getApplicationContext(), tool.toString(), Toast.LENGTH_LONG).show();
                                     Intent intent = new Intent(MainActivity.this, ToolViewActivity.class);
-                                    intent.putExtra("name", tool.getName());
-                                    intent.putExtra("url", tool.getUrl());
+                                    intent.putExtra("tool", (Serializable) tool);
                                     startActivity(intent);
                                     return false;
                                 }

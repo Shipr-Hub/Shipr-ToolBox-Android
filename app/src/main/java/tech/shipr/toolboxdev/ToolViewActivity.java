@@ -5,6 +5,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import tech.shipr.toolboxdev.model.Tool;
+
 public class ToolViewActivity extends AppCompatActivity {
     TextView textTextView;
     TextView nameTextView;
@@ -18,8 +20,9 @@ public class ToolViewActivity extends AppCompatActivity {
         nameTextView = findViewById(R.id.toolNameTextView);
         urlTextView = findViewById(R.id.toolUrlTextView);
         textTextView = findViewById(R.id.toolTextTextView);
-        setNameTextView(getIntent().getStringExtra("name"));
-        setUrlTextView(getIntent().getStringExtra("url"));
+        Tool tool = (Tool) getIntent().getSerializableExtra("tool");
+        setNameTextView(tool.getName());
+        setUrlTextView(tool.getUrl());
     }
 
     private void setTextTextView(String text) {

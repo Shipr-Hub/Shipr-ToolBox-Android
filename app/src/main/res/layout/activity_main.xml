@@ -12,6 +12,10 @@
         android:orientation="vertical"
         tools:context=".MainActivity">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Favourite Tools" />
 
         <GridView
             android:id="@+id/favouriteAppsGrid"
@@ -20,35 +24,42 @@
             android:columnWidth="100dp"
             android:gravity="center"
             android:numColumns="auto_fit"
-            android:stretchMode="spacingWidthUniform"
-             />
+            android:stretchMode="spacingWidthUniform" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Favourite Categories" />
 
         <LinearLayout
             android:id="@+id/favouriteCategoriesContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            >
+            android:orientation="vertical">
 
         </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="All Categories" />
 
         <LinearLayout
             android:id="@+id/allCategoriesContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
-        </LinearLayout>
+            android:orientation="vertical"></LinearLayout>
 
         <!--<TextView-->
-            <!--android:id="@+id/debugTextView"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content" />-->
+        <!--android:id="@+id/debugTextView"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content" />-->
 
         <!--<Button-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:onClick="openTools"-->
-            <!--android:text="tools" />-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:onClick="openTools"-->
+        <!--android:text="tools" />-->
     </LinearLayout>
 
 
