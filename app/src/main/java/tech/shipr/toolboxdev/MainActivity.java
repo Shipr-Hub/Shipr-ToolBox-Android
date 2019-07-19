@@ -18,6 +18,8 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -28,41 +30,65 @@ import java.util.HashMap;
 import java.util.List;
 
 import tech.shipr.toolboxdev.model.Tool;
+import tech.shipr.toolboxdev.model.User;
 
 public class MainActivity extends AppCompatActivity {
 
-    // TextView debugTextView;
     String TAG = "MainActivity";
     FirebaseFirestore db;
     LinearLayout AllCalLayout;
     FirebaseAuth mFirebaseAuth;
     FirebaseAuth.AuthStateListener mAuthStateListener;
 
-
-    HashMap<String, List<String>> expandableListDetail;
+    HashMap<String, List<Tool>> expandableListDetail;
     List<String> allCatExpandableListTitle;
     ExpandableListView allCatExpandableListView;
     ExpandableListAdapter allCatExpandableListAdapter;
 
-    //ExpandableListView expandableListView;
-    //ExpandableListAdapter expandableListAdapter;
-    //List<String> expandableListTitle;
-    //
-    // final HashMap<String, List<String>> expandableListDetail = new HashMap<String, List<String>>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-       // debugTextView = findViewById(R.id.debugTextView);
         AllCalLayout = findViewById(R.id.allCategoriesContainer);
         mFirebaseAuth = FirebaseAuth.getInstance();
         startAuthListener();
         db = FirebaseFirestore.getInstance();
-        loadAllCat("cat", "products", AllCalLayout);
+        loadAllCat(AllCalLayout);
+        loadFavCategories();
+
+
     }
 
-    private void loadAllCat(final String firstCat, final String secondCat, final LinearLayout layout) {
-        db.collection(firstCat)
+    private void loadFavCategories() {
+        final DocumentReference docRef = db.collection("users").document("123");
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        User user = document.toObject(User.class);
+                        Object favcat = user.getFavcat();
+                        ArrayList l = (ArrayList) favcat;
+
+                        for (int i = 0; i < l.size(); i++) {
+                            loadData(l.get(i).toString(), (LinearLayout) findViewById(R.id.favouriteCategoriesContainer));
+                        }
+
+
+                    } else {
+                        Log.d(TAG, "No such document");
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+            }
+        });
+    }
+
+    private void loadAllCat(final LinearLayout layout) {
+        db.collection("cat")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -71,86 +97,8 @@ public class MainActivity extends AppCompatActivity {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 final String cat = document.getId();
                                 Log.d(TAG, cat + " => " + document.getData());
-                                db.collection(firstCat).document(cat).collection(secondCat)
-                                        .get()
-                                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                                if (task.isSuccessful()) {
-                                                    List<String> data = new ArrayList<String>();
-
-                                                    for (QueryDocumentSnapshot document : task.getResult()) {
-                                                        Log.d(TAG, document.getId() + " => " + document.getData());
-                                                     Tool tool = document.toObject(Tool.class);
-                                                        Log.d(TAG, "onComplete() called with: task = [" + tool + "]");
-                                                        String name = document.getData().get("name").toString();
-                                                        data.add(name);
-
-                                                    }
-
-                                                    expandableListDetail = new HashMap<String, List<String>>();
-                                                    expandableListDetail.put(cat, data);
-                                                    Log.d("list", expandableListDetail.toString());
-
-
-                                                    allCatExpandableListView = new ExpandableListView(getApplicationContext());
-                                                    allCatExpandableListView.setLayoutParams(new LinearLayout.LayoutParams(
-                                                            LinearLayout.LayoutParams.MATCH_PARENT,
-                                                            ViewGroup.LayoutParams.WRAP_CONTENT));
-
-
-                                                    layout.addView(allCatExpandableListView);
-
-
-                                                    allCatExpandableListTitle = new ArrayList<>(expandableListDetail.keySet());
-                                                    allCatExpandableListAdapter = new CustomExpandableListAdapter(getApplicationContext(), allCatExpandableListTitle, expandableListDetail);
-                                                    allCatExpandableListView.setAdapter(allCatExpandableListAdapter);
-
-                                                    allCatExpandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
-
-                                                        @Override
-                                                        public void onGroupExpand(int groupPosition) {
-                                                            Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " List Expanded.", Toast.LENGTH_SHORT).show();
-                                                        }
-                                                    });
-
-                                                    allCatExpandableListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
-                                                        @Override
-                                                        public void onGroupCollapse(int groupPosition) {
-                                                            Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " List Collapsed.", Toast.LENGTH_SHORT).show();
-                                                        }
-                                                    });
-
-                                                    allCatExpandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
-
-                                                        @Override
-                                                        public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
-                                                            setListViewHeight(parent, groupPosition);
-                                                            return false;
-                                                        }
-                                                    });
-
-                                                    allCatExpandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-                                                        @Override
-                                                        public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                                                        //    Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " -> " + expandableListDetail.get(allCatExpandableListTitle.get(groupPosition)).get(childPosition), Toast.LENGTH_SHORT).show();
-                                                            return false;
-                                                        }
-                                                    });
-
-
-
-
-                                                } else {
-                                                    Log.w(TAG, "Error getting documents.", task.getException());
-                                                }
-                                            }
-                                        });
-
-
+                                loadData(cat, layout);
                             }
-
-
                         } else {
                             Log.w(TAG, "Error getting documents.", task.getException());
                         }
@@ -158,14 +106,87 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void appendDebug(Object debugString) {
-     //   debugTextView.append(" \n" + debugString.toString());
-    }
+    private void loadData(final String cat, final LinearLayout layout) {
+
+        db.collection("cat").document(cat).collection("products")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            List<Tool> data = new ArrayList<Tool>();
+
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d(TAG, document.getId() + " => " + document.getData());
+                                Tool tool = document.toObject(Tool.class);
+                                data.add(tool);
+
+                            }
+
+                            expandableListDetail = new HashMap<String, List<Tool>>();
+                            expandableListDetail.put(cat, data);
+                            Log.d("list", expandableListDetail.toString());
 
 
+                            allCatExpandableListView = new ExpandableListView(getApplicationContext());
+                            allCatExpandableListView.setLayoutParams(new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.WRAP_CONTENT));
 
-    public void openTools(View v) {
-        startActivity(new Intent(MainActivity.this, ToolActivity.class));
+
+                            layout.addView(allCatExpandableListView);
+
+
+                            allCatExpandableListTitle = new ArrayList<>(expandableListDetail.keySet());
+                            allCatExpandableListAdapter = new CustomExpandableListAdapter(getApplicationContext(), allCatExpandableListTitle, expandableListDetail);
+                            allCatExpandableListView.setAdapter(allCatExpandableListAdapter);
+
+                            allCatExpandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
+
+                                @Override
+                                public void onGroupExpand(int groupPosition) {
+                                    Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " List Expanded.", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                            allCatExpandableListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
+                                @Override
+                                public void onGroupCollapse(int groupPosition) {
+                                    Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " List Collapsed.", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                            allCatExpandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
+
+                                @Override
+                                public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
+                                    setListViewHeight(parent, groupPosition);
+                                    return false;
+                                }
+                            });
+
+                            allCatExpandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+                                @Override
+                                public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                                    //   Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " -> " + expandableListDetail.get(allCatExpandableListTitle.get(groupPosition)).get(childPosition), Toast.LENGTH_SHORT).show();
+                                    Tool tool = expandableListDetail.get(allCatExpandableListTitle.get(groupPosition)).get(childPosition);
+                                    Toast.makeText(getApplicationContext(), tool.toString(), Toast.LENGTH_LONG).show();
+                                    Intent intent = new Intent(MainActivity.this, ToolViewActivity.class);
+                                    intent.putExtra("name", tool.getName());
+                                    intent.putExtra("url", tool.getUrl());
+                                    startActivity(intent);
+                                    return false;
+                                }
+                            });
+
+
+                        } else {
+                            Log.w(TAG, "Error getting documents.", task.getException());
+                        }
+                    }
+                });
+
+
     }
 
     private void startAuthListener() {
@@ -199,8 +220,7 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    private void setListViewHeight(ExpandableListView listView,
-                                   int group) {
+    private void setListViewHeight(ExpandableListView listView, int group) {
         ExpandableListAdapter listAdapter = (ExpandableListAdapter) listView.getExpandableListAdapter();
         int totalHeight = 0;
         int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(),
