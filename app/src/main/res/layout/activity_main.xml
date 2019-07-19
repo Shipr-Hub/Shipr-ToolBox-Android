@@ -21,22 +21,15 @@
             android:gravity="center"
             android:numColumns="auto_fit"
             android:stretchMode="spacingWidthUniform"
-            android:visibility="gone" />
+             />
 
         <LinearLayout
             android:id="@+id/favouriteCategoriesContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:visibility="gone">
+            >
 
-            <!--<ExpandableListView-->
-            <!--android:id="@+id/favouriteCategoriesAddedByJava"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="200dp"-->
-            <!--android:divider="@android:color/darker_gray"-->
-            <!--android:dividerHeight="0.5dp"-->
-            <!--android:indicatorLeft="?android:attr/expandableListPreferredItemIndicatorLeft" />-->
         </LinearLayout>
 
         <LinearLayout
@@ -44,14 +37,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
-
-            <!--<ExpandableListView-->
-            <!--android:id="@+id/allCategoriesAddedByJava"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="300dp"-->
-            <!--android:divider="@android:color/darker_gray"-->
-            <!--android:dividerHeight="0.5dp"-->
-            <!--android:indicatorLeft="?android:attr/expandableListPreferredItemIndicatorLeft" />-->
         </LinearLayout>
 
         <!--<TextView-->

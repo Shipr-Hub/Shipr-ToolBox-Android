@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -28,9 +27,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import tech.shipr.toolboxdev.model.Tool;
+
 public class MainActivity extends AppCompatActivity {
 
-    TextView debugTextView;
+    // TextView debugTextView;
     String TAG = "MainActivity";
     FirebaseFirestore db;
     LinearLayout AllCalLayout;
@@ -57,49 +58,11 @@ public class MainActivity extends AppCompatActivity {
         mFirebaseAuth = FirebaseAuth.getInstance();
         startAuthListener();
         db = FirebaseFirestore.getInstance();
-        getData();
-
-
-//        cricket.add("India");
-//        cricket.add("Pakistan");
-//        cricket.add("Australia");
-//        cricket.add("England");
-//        cricket.add("South Africa");
-
-
-//        expandableListDetail.put("CRICKET TEAMS", cricket);
-
-        //  expandableListView =  findViewById(R.id.allCategoriesAddedByJava);
-
-
-//        expandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
-//
-//            @Override
-//            public void onGroupExpand(int groupPosition) {
-//                Toast.makeText(getApplicationContext(), expandableListTitle.get(groupPosition) + " List Expanded.", Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//
-//        expandableListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
-//            @Override
-//            public void onGroupCollapse(int groupPosition) {
-//                Toast.makeText(getApplicationContext(), expandableListTitle.get(groupPosition) + " List Collapsed.", Toast.LENGTH_SHORT).show();
-//            }
-//        });
-//
-//        expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-//            @Override
-//            public boolean onChildClick(ExpandableListView parent, View v,
-//                                        int groupPosition, int childPosition, long id) {
-//                Toast.makeText(getApplicationContext(), expandableListTitle.get(groupPosition) + " -> " + expandableListDetail.get(expandableListTitle.get(groupPosition)).get(childPosition), Toast.LENGTH_SHORT).show();
-//                return false;
-//            }
-//        });
+        loadAllCat("cat", "products", AllCalLayout);
     }
 
-    private void getData() {
-
-        db.collection("cat")
+    private void loadAllCat(final String firstCat, final String secondCat, final LinearLayout layout) {
+        db.collection(firstCat)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -108,9 +71,7 @@ public class MainActivity extends AppCompatActivity {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 final String cat = document.getId();
                                 Log.d(TAG, cat + " => " + document.getData());
-
-
-                                db.collection("cat").document(cat).collection("products")
+                                db.collection(firstCat).document(cat).collection(secondCat)
                                         .get()
                                         .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                                             @Override
@@ -120,9 +81,9 @@ public class MainActivity extends AppCompatActivity {
 
                                                     for (QueryDocumentSnapshot document : task.getResult()) {
                                                         Log.d(TAG, document.getId() + " => " + document.getData());
-                                                        appendDebug(document);
+                                                     Tool tool = document.toObject(Tool.class);
+                                                        Log.d(TAG, "onComplete() called with: task = [" + tool + "]");
                                                         String name = document.getData().get("name").toString();
-                                                        Log.d("Name", name);
                                                         data.add(name);
 
                                                     }
@@ -138,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
                                                             ViewGroup.LayoutParams.WRAP_CONTENT));
 
 
-                                                    AllCalLayout.addView(allCatExpandableListView);
+                                                    layout.addView(allCatExpandableListView);
 
 
                                                     allCatExpandableListTitle = new ArrayList<>(expandableListDetail.keySet());
@@ -163,8 +124,7 @@ public class MainActivity extends AppCompatActivity {
                                                     allCatExpandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
 
                                                         @Override
-                                                        public boolean onGroupClick(ExpandableListView parent, View v,
-                                                                                    int groupPosition, long id) {
+                                                        public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
                                                             setListViewHeight(parent, groupPosition);
                                                             return false;
                                                         }
@@ -172,9 +132,8 @@ public class MainActivity extends AppCompatActivity {
 
                                                     allCatExpandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
                                                         @Override
-                                                        public boolean onChildClick(ExpandableListView parent, View v,
-                                                                                    int groupPosition, int childPosition, long id) {
-                                                            Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " -> " + expandableListDetail.get(allCatExpandableListTitle.get(groupPosition)).get(childPosition), Toast.LENGTH_SHORT).show();
+                                                        public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                                                        //    Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " -> " + expandableListDetail.get(allCatExpandableListTitle.get(groupPosition)).get(childPosition), Toast.LENGTH_SHORT).show();
                                                             return false;
                                                         }
                                                     });
@@ -202,6 +161,8 @@ public class MainActivity extends AppCompatActivity {
     private void appendDebug(Object debugString) {
      //   debugTextView.append(" \n" + debugString.toString());
     }
+
+
 
     public void openTools(View v) {
         startActivity(new Intent(MainActivity.this, ToolActivity.class));
