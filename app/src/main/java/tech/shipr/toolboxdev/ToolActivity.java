@@ -2,21 +2,21 @@ package tech.shipr.toolboxdev;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.firebase.ui.auth.AuthUI;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -25,7 +25,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -128,11 +128,15 @@ public class ToolActivity extends AppCompatActivity {
                 } else {
                     // User is signed out
                     onSignedOutCleanup();
+                    // Choose authentication providers
+                    List<AuthUI.IdpConfig> providers = Collections.singletonList(
+                            new AuthUI.IdpConfig.EmailBuilder().build());
+
+// Create and launch sign-in intent
                     startActivityForResult(
                             AuthUI.getInstance()
                                     .createSignInIntentBuilder()
-                                    .setAvailableProviders(
-                                            Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build()))
+                                    .setAvailableProviders(providers)
                                     .build(),
                             RC_SIGN_IN);
 
@@ -145,19 +149,17 @@ public class ToolActivity extends AppCompatActivity {
     }
 
 
-
-
     private void onSignedInInitialize(String username, String uid) {
         mUid = uid;
         mUsername = username;
-        String toolLoc = "users/" + mUid+"/tool";
-   //     toolLoc = toolLoc.replaceAll(" ", "_").toLowerCase();
+        String toolLoc = "users/" + mUid + "/tool";
+        //     toolLoc = toolLoc.replaceAll(" ", "_").toLowerCase();
         mToolDatabaseReference = mFirebaseDatabase.getReference().child(toolLoc);
         attachDatabaseReadListener();
     }
 
 
-    private void onSignedOutCleanup(){
+    private void onSignedOutCleanup() {
         mUsername = ANONYMOUS;
         mMessageAdapter.clear();
         detachDatabaseReadListener();
@@ -165,12 +167,7 @@ public class ToolActivity extends AppCompatActivity {
     }
 
 
-
-
-
-
-
-private void attachDatabaseReadListener() {
+    private void attachDatabaseReadListener() {
 
         if (mChildEventListener == null) {
 
@@ -197,42 +194,30 @@ private void attachDatabaseReadListener() {
 
             mToolDatabaseReference.addChildEventListener(mChildEventListener);
         }
-}
-private void detachDatabaseReadListener(){
-        if(mChildEventListener != null) {
+    }
+
+    private void detachDatabaseReadListener() {
+        if (mChildEventListener != null) {
             mToolDatabaseReference.removeEventListener(mChildEventListener);
             mChildEventListener = null;
         }
-}
+    }
 
 
+    @Override
+    public void onActivityResult(int requestCode, int resultcode, Intent data) {
+        super.onActivityResult(requestCode, resultcode, data);
+        if (requestCode == RC_SIGN_IN) {
 
+            if (resultcode == RESULT_OK) {
 
-
-
-
-
-
-
-
-@Override
-public void onActivityResult(int requestCode, int resultcode, Intent data){
-    super.onActivityResult(requestCode, resultcode, data);
-    if (requestCode == RC_SIGN_IN) {
-
-        if (resultcode == RESULT_OK) {
-
-             Toast.makeText(this, "Signed in!", Toast.LENGTH_SHORT).show();
-        }
-
-        else if (requestCode == RESULT_CANCELED) {
-            Toast.makeText(this, "Sign in cancelled", Toast.LENGTH_SHORT).show();
-          finish();
+                Toast.makeText(this, "Signed in!", Toast.LENGTH_SHORT).show();
+            } else if (requestCode == RESULT_CANCELED) {
+                Toast.makeText(this, "Sign in cancelled", Toast.LENGTH_SHORT).show();
+                finish();
+            }
         }
     }
-}
-
-
 
 
     @Override
