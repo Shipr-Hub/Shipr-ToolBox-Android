@@ -26,7 +26,7 @@
         <LinearLayout
             android:id="@+id/favouriteCategoriesContainer"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -42,7 +42,7 @@
         <LinearLayout
             android:id="@+id/allCategoriesContainer"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical">
 
             <!--<ExpandableListView-->
@@ -54,16 +54,16 @@
             <!--android:indicatorLeft="?android:attr/expandableListPreferredItemIndicatorLeft" />-->
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/debugTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+        <!--<TextView-->
+            <!--android:id="@+id/debugTextView"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content" />-->
 
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="openTools"
-            android:text="tools" />
+        <!--<Button-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:onClick="openTools"-->
+            <!--android:text="tools" />-->
     </LinearLayout>
 
 

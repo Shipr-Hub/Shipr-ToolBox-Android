@@ -4,6 +4,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ExpandableListAdapter;
+import android.widget.ExpandableListView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,7 +23,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -27,9 +33,15 @@ public class MainActivity extends AppCompatActivity {
     TextView debugTextView;
     String TAG = "MainActivity";
     FirebaseFirestore db;
-
+    LinearLayout AllCalLayout;
     FirebaseAuth mFirebaseAuth;
     FirebaseAuth.AuthStateListener mAuthStateListener;
+
+
+    HashMap<String, List<String>> expandableListDetail;
+    List<String> allCatExpandableListTitle;
+    ExpandableListView allCatExpandableListView;
+    ExpandableListAdapter allCatExpandableListAdapter;
 
     //ExpandableListView expandableListView;
     //ExpandableListAdapter expandableListAdapter;
@@ -40,35 +52,26 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        debugTextView = findViewById(R.id.debugTextView);
+       // debugTextView = findViewById(R.id.debugTextView);
+        AllCalLayout = findViewById(R.id.allCategoriesContainer);
         mFirebaseAuth = FirebaseAuth.getInstance();
         startAuthListener();
         db = FirebaseFirestore.getInstance();
         getData();
 
-        // startActivity(new Intent(MainActivity.this, ToolActivity.class));
-//        List<String> cricket = new ArrayList<String>();
+
 //        cricket.add("India");
 //        cricket.add("Pakistan");
 //        cricket.add("Australia");
 //        cricket.add("England");
 //        cricket.add("South Africa");
-//
-//        List<String> football = new ArrayList<String>();
-//        football.add("Brazil");
-//        football.add("Spain");
-//        football.add("Germany");
-//        football.add("Netherlands");
-//        football.add("Italy");
 
 
 //        expandableListDetail.put("CRICKET TEAMS", cricket);
-//        expandableListDetail.put("FOOTBALL TEAMS", football);
 
         //  expandableListView =  findViewById(R.id.allCategoriesAddedByJava);
-        // expandableListTitle = new ArrayList<>(expandableListDetail.keySet());
-        // expandableListAdapter = new CustomExpandableListAdapter(this, expandableListTitle, expandableListDetail);
-        //     expandableListView.setAdapter(expandableListAdapter);
+
+
 //        expandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
 //
 //            @Override
@@ -76,14 +79,14 @@ public class MainActivity extends AppCompatActivity {
 //                Toast.makeText(getApplicationContext(), expandableListTitle.get(groupPosition) + " List Expanded.", Toast.LENGTH_SHORT).show();
 //            }
 //        });
-
+//
 //        expandableListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
 //            @Override
 //            public void onGroupCollapse(int groupPosition) {
 //                Toast.makeText(getApplicationContext(), expandableListTitle.get(groupPosition) + " List Collapsed.", Toast.LENGTH_SHORT).show();
 //            }
 //        });
-
+//
 //        expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
 //            @Override
 //            public boolean onChildClick(ExpandableListView parent, View v,
@@ -103,18 +106,82 @@ public class MainActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
-                                String cat = document.getId();
+                                final String cat = document.getId();
                                 Log.d(TAG, cat + " => " + document.getData());
+
+
                                 db.collection("cat").document(cat).collection("products")
                                         .get()
                                         .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                                             @Override
                                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                                 if (task.isSuccessful()) {
+                                                    List<String> data = new ArrayList<String>();
+
                                                     for (QueryDocumentSnapshot document : task.getResult()) {
                                                         Log.d(TAG, document.getId() + " => " + document.getData());
                                                         appendDebug(document);
+                                                        String name = document.getData().get("name").toString();
+                                                        Log.d("Name", name);
+                                                        data.add(name);
+
                                                     }
+
+                                                    expandableListDetail = new HashMap<String, List<String>>();
+                                                    expandableListDetail.put(cat, data);
+                                                    Log.d("list", expandableListDetail.toString());
+
+
+                                                    allCatExpandableListView = new ExpandableListView(getApplicationContext());
+                                                    allCatExpandableListView.setLayoutParams(new LinearLayout.LayoutParams(
+                                                            LinearLayout.LayoutParams.MATCH_PARENT,
+                                                            ViewGroup.LayoutParams.WRAP_CONTENT));
+
+
+                                                    AllCalLayout.addView(allCatExpandableListView);
+
+
+                                                    allCatExpandableListTitle = new ArrayList<>(expandableListDetail.keySet());
+                                                    allCatExpandableListAdapter = new CustomExpandableListAdapter(getApplicationContext(), allCatExpandableListTitle, expandableListDetail);
+                                                    allCatExpandableListView.setAdapter(allCatExpandableListAdapter);
+
+                                                    allCatExpandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
+
+                                                        @Override
+                                                        public void onGroupExpand(int groupPosition) {
+                                                            Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " List Expanded.", Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    });
+
+                                                    allCatExpandableListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
+                                                        @Override
+                                                        public void onGroupCollapse(int groupPosition) {
+                                                            Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " List Collapsed.", Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    });
+
+                                                    allCatExpandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
+
+                                                        @Override
+                                                        public boolean onGroupClick(ExpandableListView parent, View v,
+                                                                                    int groupPosition, long id) {
+                                                            setListViewHeight(parent, groupPosition);
+                                                            return false;
+                                                        }
+                                                    });
+
+                                                    allCatExpandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+                                                        @Override
+                                                        public boolean onChildClick(ExpandableListView parent, View v,
+                                                                                    int groupPosition, int childPosition, long id) {
+                                                            Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " -> " + expandableListDetail.get(allCatExpandableListTitle.get(groupPosition)).get(childPosition), Toast.LENGTH_SHORT).show();
+                                                            return false;
+                                                        }
+                                                    });
+
+
+
+
                                                 } else {
                                                     Log.w(TAG, "Error getting documents.", task.getException());
                                                 }
@@ -123,6 +190,8 @@ public class MainActivity extends AppCompatActivity {
 
 
                             }
+
+
                         } else {
                             Log.w(TAG, "Error getting documents.", task.getException());
                         }
@@ -131,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void appendDebug(Object debugString) {
-        debugTextView.append(" \n" + debugString.toString());
+     //   debugTextView.append(" \n" + debugString.toString());
     }
 
     public void openTools(View v) {
@@ -168,4 +237,41 @@ public class MainActivity extends AppCompatActivity {
             }
         };
     }
+
+    private void setListViewHeight(ExpandableListView listView,
+                                   int group) {
+        ExpandableListAdapter listAdapter = (ExpandableListAdapter) listView.getExpandableListAdapter();
+        int totalHeight = 0;
+        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(),
+                View.MeasureSpec.EXACTLY);
+        for (int i = 0; i < listAdapter.getGroupCount(); i++) {
+            View groupItem = listAdapter.getGroupView(i, false, null, listView);
+            groupItem.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
+
+            totalHeight += groupItem.getMeasuredHeight();
+
+            if (((listView.isGroupExpanded(i)) && (i != group))
+                    || ((!listView.isGroupExpanded(i)) && (i == group))) {
+                for (int j = 0; j < listAdapter.getChildrenCount(i); j++) {
+                    View listItem = listAdapter.getChildView(i, j, false, null,
+                            listView);
+                    listItem.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
+
+                    totalHeight += listItem.getMeasuredHeight();
+
+                }
+            }
+        }
+
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        int height = totalHeight
+                + (listView.getDividerHeight() * (listAdapter.getGroupCount() - 1));
+        if (height < 10)
+            height = 200;
+        params.height = height;
+        listView.setLayoutParams(params);
+        listView.requestLayout();
+
+    }
+
 }
