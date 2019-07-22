@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout AllCalLayout;
     FirebaseAuth mFirebaseAuth;
     FirebaseAuth.AuthStateListener mAuthStateListener;
-    HashMap<String, List<Tool>>   expandableListDetail = new HashMap<String, List<Tool>>();;
+    HashMap<String, List<Tool>> expandableListDetail;
 
     List<String> allCatExpandableListTitle;
     ExpandableListView allCatExpandableListView;
@@ -183,12 +183,12 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            List<Tool> data = null;
+                            List<Tool> data = new ArrayList<Tool>();
 
 
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Log.d(TAG, "onComplete: " + document.getId());
-                                data = new ArrayList<Tool>();
+
 
                                 Tool tool = document.toObject(Tool.class);
                                 tool.setKey(document.getId());
@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
                                 data.add(tool);
 
                             }
-
+                            expandableListDetail = new HashMap<String, List<Tool>>();
                             expandableListDetail.put(cat, data);
 
                             allCatExpandableListView = new ExpandableListView(getApplicationContext());
