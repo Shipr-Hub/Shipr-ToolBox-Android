@@ -27,7 +27,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,8 +45,8 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout AllCalLayout;
     FirebaseAuth mFirebaseAuth;
     FirebaseAuth.AuthStateListener mAuthStateListener;
+    HashMap<String, List<Tool>>   expandableListDetail = new HashMap<String, List<Tool>>();;
 
-    HashMap<String, List<Tool>> expandableListDetail;
     List<String> allCatExpandableListTitle;
     ExpandableListView allCatExpandableListView;
     ExpandableListAdapter allCatExpandableListAdapter;
@@ -65,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
         gv = findViewById(R.id.favouriteAppsGrid);
         AllCalLayout = findViewById(R.id.allCategoriesContainer);
+
         mFirebaseAuth = FirebaseAuth.getInstance();
         startAuthListener();
         db = FirebaseFirestore.getInstance();
@@ -72,17 +72,17 @@ public class MainActivity extends AppCompatActivity {
         setupToolAdapter();
         loadFavCategoriesAndProducts();
 
+
         gv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
-Tool tool = clickToolList.get(position);
+                Tool tool = clickToolList.get(position);
                 Intent intent = new Intent(MainActivity.this, ToolViewActivity.class);
-                intent.putExtra("tool", (Serializable) tool);
+                intent.putExtra("tool", tool);
                 startActivity(intent);
             }
         });
-
 
     }
 
@@ -166,7 +166,6 @@ Tool tool = clickToolList.get(position);
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 final String cat = document.getId();
-                                Log.d(TAG, cat + " => " + document.getData());
                                 addCat(cat, layout);
                             }
                         } else {
@@ -184,19 +183,21 @@ Tool tool = clickToolList.get(position);
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            List<Tool> data = new ArrayList<Tool>();
+                            List<Tool> data = null;
+
 
                             for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d(TAG, document.getId() + " => " + document.getData());
+                                Log.d(TAG, "onComplete: " + document.getId());
+                                data = new ArrayList<Tool>();
+
                                 Tool tool = document.toObject(Tool.class);
+                                tool.setKey(document.getId());
+                                tool.setCat(cat);
                                 data.add(tool);
 
                             }
 
-                            expandableListDetail = new HashMap<String, List<Tool>>();
                             expandableListDetail.put(cat, data);
-                            Log.d("list", expandableListDetail.toString());
-
 
                             allCatExpandableListView = new ExpandableListView(getApplicationContext());
                             allCatExpandableListView.setLayoutParams(new LinearLayout.LayoutParams(
@@ -206,7 +207,7 @@ Tool tool = clickToolList.get(position);
 
                             layout.addView(allCatExpandableListView);
 
-
+                            Log.d(TAG, "onCoomplete: " + expandableListDetail);
                             allCatExpandableListTitle = new ArrayList<>(expandableListDetail.keySet());
                             allCatExpandableListAdapter = new CustomExpandableListAdapter(getApplicationContext(), allCatExpandableListTitle, expandableListDetail);
                             allCatExpandableListView.setAdapter(allCatExpandableListAdapter);
@@ -215,14 +216,14 @@ Tool tool = clickToolList.get(position);
 
                                 @Override
                                 public void onGroupExpand(int groupPosition) {
-                                    Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " List Expanded.", Toast.LENGTH_SHORT).show();
+                                    //  Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " List Expanded.", Toast.LENGTH_SHORT).show();
                                 }
                             });
 
                             allCatExpandableListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
                                 @Override
                                 public void onGroupCollapse(int groupPosition) {
-                                    Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " List Collapsed.", Toast.LENGTH_SHORT).show();
+                                    //  Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " List Collapsed.", Toast.LENGTH_SHORT).show();
                                 }
                             });
 
@@ -238,11 +239,23 @@ Tool tool = clickToolList.get(position);
                             allCatExpandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
                                 @Override
                                 public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                                    Log.d(TAG, "onChildClick: " + expandableListDetail);
                                     //   Toast.makeText(getApplicationContext(), allCatExpandableListTitle.get(groupPosition) + " -> " + expandableListDetail.get(allCatExpandableListTitle.get(groupPosition)).get(childPosition), Toast.LENGTH_SHORT).show();
-                                    Tool tool = Objects.requireNonNull(expandableListDetail.get(allCatExpandableListTitle.get(groupPosition))).get(childPosition);
-                                    Toast.makeText(getApplicationContext(), tool.toString(), Toast.LENGTH_LONG).show();
+                                    Tool tool;
+//                                    Log.d(TAG, "expandableListDetail: " + expandableListDetail);
+//                                    Log.d(TAG, "allCatExpandableListTitle: " + allCatExpandableListTitle);
+//                                    Log.d(TAG, "groupPosition: " + groupPosition);
+//                                    Log.d(TAG, "childPosition: " + childPosition);
+//                                    Log.d(TAG, "##########: " + "########");
+//                                    Log.d(TAG, "groupPosition: " + groupPosition);
+//                                    Log.d(TAG, "onChildClick: " + allCatExpandableListTitle.get(groupPosition));
+//                                    Log.d(TAG, "onChildClick: " + expandableListDetail.get(allCatExpandableListTitle.get(groupPosition)));
+                                    Log.d(TAG, "onChildClick: " + expandableListDetail.get(allCatExpandableListTitle.get(groupPosition)).get(childPosition));
+                                    tool = Objects.requireNonNull(expandableListDetail.get(allCatExpandableListTitle.get(groupPosition))).get(childPosition);
+                                    //   Toast.makeText(getApplicationContext(), tool.toString(), Toast.LENGTH_LONG).show();
+                                    //   Toast.makeText(getApplicationContext(), expandableListDetail.toString(), Toast.LENGTH_LONG).show();
                                     Intent intent = new Intent(MainActivity.this, ToolViewActivity.class);
-                                    intent.putExtra("tool", (Serializable) tool);
+                                    intent.putExtra("tool", tool);
                                     startActivity(intent);
                                     return false;
                                 }
@@ -290,7 +303,7 @@ Tool tool = clickToolList.get(position);
     }
 
     private void setListViewHeight(ExpandableListView listView, int group) {
-        ExpandableListAdapter listAdapter = (ExpandableListAdapter) listView.getExpandableListAdapter();
+        ExpandableListAdapter listAdapter = listView.getExpandableListAdapter();
         int totalHeight = 0;
         int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(),
                 View.MeasureSpec.EXACTLY);

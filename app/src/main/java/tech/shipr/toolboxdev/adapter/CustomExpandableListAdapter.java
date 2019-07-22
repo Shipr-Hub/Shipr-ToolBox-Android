@@ -1,7 +1,9 @@
 package tech.shipr.toolboxdev.adapter;
 
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,11 +12,23 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import tech.shipr.toolboxdev.R;
 import tech.shipr.toolboxdev.model.Tool;
@@ -26,7 +40,7 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
     private Context context;
     private List<String> expandableListTitle;
     private HashMap<String, List<Tool>> expandableListDetail;
-
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
     public CustomExpandableListAdapter(Context context, List<String> expandableListTitle,
                                        HashMap<String, List<Tool>> expandableListDetail) {
         this.context = context;
@@ -45,10 +59,11 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         return expandedListPosition;
     }
 
+    @SuppressLint("RestrictedApi")
     @Override
     public View getChildView(int listPosition, final int expandedListPosition,
                              boolean isLastChild, View convertView, ViewGroup parent) {
-        final Tool mTool = (Tool) getChild(listPosition, expandedListPosition);
+         final Tool mTool = (Tool) getChild(listPosition, expandedListPosition);
         if (convertView == null) {
             LayoutInflater layoutInflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = layoutInflater.inflate(R.layout.list_item, null);
@@ -57,14 +72,31 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         expandedListTextView.setText(mTool.getName());
         Button starButton = convertView.findViewById(R.id.starToolButton);
         starButton.setBackground(ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.btn_star_big_off));
+        starButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Perform action on click
+
+                starTool(mTool);
+
+            }
+        });
         return convertView;
+    }
+
+    private void starTool(Tool mTool) {
+//        String loc = "/cat/" + mTool.getCat() + "/products/" + mTool.getKey();
+        DocumentReference starToolRef =    db.collection("users").document("1234");
+        DocumentReference toolRef = db.collection("cat").document(mTool.getCat()).collection("products").document(mTool.getKey());
+
+        starToolRef.update("favtool", FieldValue.arrayUnion(toolRef));
+        Toast.makeText(getApplicationContext(), mTool.getName() + " added to favourites", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public int getChildrenCount(int listPosition) {
-        Log.d("tag", "getChildrenCount: " + this.expandableListDetail.get(this.expandableListTitle.get(listPosition)).size());
-       return this.expandableListDetail.get(this.expandableListTitle.get(listPosition)).size();
-
+       // Log.d("tag", "getChildrenCount: " + this.expandableListDetail.get(this.expandableListTitle.get(listPosition)).size());
+        Log.d("tag", "getChildrenCount: " + this.expandableListDetail);
+        return this.expandableListDetail.get(this.expandableListTitle.get(listPosition)).size();
     }
 
     @Override
@@ -86,18 +118,15 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
     @Override
     public View getGroupView(int listPosition, boolean isExpanded,
                              View convertView, ViewGroup parent) {
-        String listTitle = (String) getGroup(listPosition);
+        final String listTitle = (String) getGroup(listPosition);
         if (convertView == null) {
             LayoutInflater layoutInflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = layoutInflater.inflate(R.layout.list_group, null);
         }
         TextView listTitleTextView = convertView.findViewById(R.id.listTitle);
         listTitleTextView.setTypeface(null, Typeface.BOLD);
+        Log.d("TAG", "getGroupView: " + listTitle);
         listTitleTextView.setText(listTitle);
-
-        Button starCat = convertView.findViewById(R.id.catStarButton);
-        starCat.setBackground(ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.btn_star_big_off));
-
         return convertView;
     }
 
