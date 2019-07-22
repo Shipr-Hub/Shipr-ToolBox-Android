@@ -1,17 +1,25 @@
-package tech.shipr.toolboxdev;
+package tech.shipr.toolboxdev.adapter;
 
 
-import java.util.HashMap;
-import java.util.List;
 import android.content.Context;
 import android.graphics.Typeface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
+
+import java.util.HashMap;
+import java.util.List;
+
+import tech.shipr.toolboxdev.R;
 import tech.shipr.toolboxdev.model.Tool;
+
+import static com.firebase.ui.auth.AuthUI.getApplicationContext;
 
 public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
 
@@ -40,22 +48,23 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
     @Override
     public View getChildView(int listPosition, final int expandedListPosition,
                              boolean isLastChild, View convertView, ViewGroup parent) {
-        final Tool expandedListText = (Tool) getChild(listPosition, expandedListPosition);
+        final Tool mTool = (Tool) getChild(listPosition, expandedListPosition);
         if (convertView == null) {
-            LayoutInflater layoutInflater = (LayoutInflater) this.context
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater layoutInflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = layoutInflater.inflate(R.layout.list_item, null);
         }
-        TextView expandedListTextView = (TextView) convertView
-                .findViewById(R.id.expandedListItem);
-        expandedListTextView.setText(expandedListText.getName());
+        TextView expandedListTextView = convertView.findViewById(R.id.expandedListItem);
+        expandedListTextView.setText(mTool.getName());
+        Button starButton = convertView.findViewById(R.id.starToolButton);
+        starButton.setBackground(ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.btn_star_big_off));
         return convertView;
     }
 
     @Override
     public int getChildrenCount(int listPosition) {
-        return this.expandableListDetail.get(this.expandableListTitle.get(listPosition))
-                .size();
+        Log.d("tag", "getChildrenCount: " + this.expandableListDetail.get(this.expandableListTitle.get(listPosition)).size());
+       return this.expandableListDetail.get(this.expandableListTitle.get(listPosition)).size();
+
     }
 
     @Override
@@ -65,6 +74,7 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public int getGroupCount() {
+        Log.d("TAG", "getGroupCount: " + this.expandableListTitle.size());
         return this.expandableListTitle.size();
     }
 
@@ -78,14 +88,16 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
                              View convertView, ViewGroup parent) {
         String listTitle = (String) getGroup(listPosition);
         if (convertView == null) {
-            LayoutInflater layoutInflater = (LayoutInflater) this.context.
-                    getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater layoutInflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = layoutInflater.inflate(R.layout.list_group, null);
         }
-        TextView listTitleTextView = (TextView) convertView
-                .findViewById(R.id.listTitle);
+        TextView listTitleTextView = convertView.findViewById(R.id.listTitle);
         listTitleTextView.setTypeface(null, Typeface.BOLD);
         listTitleTextView.setText(listTitle);
+
+        Button starCat = convertView.findViewById(R.id.catStarButton);
+        starCat.setBackground(ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.btn_star_big_off));
+
         return convertView;
     }
 

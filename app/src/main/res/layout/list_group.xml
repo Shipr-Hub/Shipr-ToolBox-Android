@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <TextView
         android:id="@+id/listTitle"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
-        android:textColor="@android:color/black"
+        android:layout_toStartOf="@+id/catStarButton"
+        android:paddingStart="?android:attr/expandableListPreferredItemPaddingLeft"
         android:paddingTop="10dp"
-        android:paddingBottom="10dp" />
-</LinearLayout>
+        android:paddingEnd="?android:attr/expandableListPreferredItemPaddingLeft"
+        android:paddingBottom="10dp"
+        android:textColor="@android:color/black"
+        tools:hint="Category Name" />
+
+    <Button
+        android:id="@+id/catStarButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:focusable="false"
+        android:layout_alignParentEnd="true" />
+
+</RelativeLayout>

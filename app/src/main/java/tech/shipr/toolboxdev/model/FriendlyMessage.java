@@ -1,4 +1,4 @@
-package tech.shipr.toolboxdev;
+package tech.shipr.toolboxdev.model;
 
 public class FriendlyMessage {
 

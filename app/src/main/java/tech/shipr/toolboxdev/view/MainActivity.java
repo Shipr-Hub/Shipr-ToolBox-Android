@@ -1,4 +1,4 @@
-package tech.shipr.toolboxdev;
+package tech.shipr.toolboxdev.view;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -34,6 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+import tech.shipr.toolboxdev.R;
+import tech.shipr.toolboxdev.adapter.CustomExpandableListAdapter;
 import tech.shipr.toolboxdev.model.Tool;
 import tech.shipr.toolboxdev.model.User;
 

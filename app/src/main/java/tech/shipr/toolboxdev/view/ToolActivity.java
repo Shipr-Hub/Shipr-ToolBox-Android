@@ -1,4 +1,4 @@
-package tech.shipr.toolboxdev;
+package tech.shipr.toolboxdev.view;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -27,6 +27,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import tech.shipr.toolboxdev.model.FriendlyMessage;
+import tech.shipr.toolboxdev.R;
+import tech.shipr.toolboxdev.adapter.MessageAdapter;
 
 
 public class ToolActivity extends AppCompatActivity {

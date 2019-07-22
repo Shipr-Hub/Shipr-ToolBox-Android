@@ -1,10 +1,11 @@
-package tech.shipr.toolboxdev;
+package tech.shipr.toolboxdev.view;
 
 import android.os.Bundle;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import tech.shipr.toolboxdev.R;
 import tech.shipr.toolboxdev.model.Tool;
 
 public class ToolViewActivity extends AppCompatActivity {
