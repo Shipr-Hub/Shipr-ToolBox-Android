@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#ffff"
-    tools:context=".view.AddToolAdmin">
+    tools:context=".view.AddTool">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -23,21 +23,6 @@
                 android:layout_marginTop="15dp"
                 android:background="@drawable/round_border"
                 tools:targetApi="lollipop" />
-
-            <EditText
-                android:id="@+id/catEditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="20dp"
-                android:layout_marginTop="25dp"
-                android:layout_marginRight="20dp"
-                android:background="@drawable/input_message_border"
-                android:ems="10"
-                android:fontFamily="@font/source_sans_pro"
-                android:hint="Category"
-                android:inputType="textPersonName"
-                android:padding="15dp"
-                android:textSize="16sp" />
 
             <EditText
                 android:id="@+id/nameEditText"

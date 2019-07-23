@@ -8,7 +8,7 @@
     <LinearLayout
         android:id="@+id/parentLL"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         tools:context=".view.MainActivity">
 
@@ -24,7 +24,8 @@
             android:columnWidth="100dp"
             android:gravity="center"
             android:numColumns="auto_fit"
-            android:stretchMode="spacingWidthUniform" />
+            android:stretchMode="spacingWidthUniform"
+            tools:ignore="NestedScrolling" />
 
         <TextView
             android:layout_width="wrap_content"

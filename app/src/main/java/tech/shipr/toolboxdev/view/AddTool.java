@@ -11,12 +11,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import tech.shipr.toolboxdev.R;
 import tech.shipr.toolboxdev.model.Tool;
 
-public class AddToolAdmin extends AppCompatActivity {
-    EditText catEditText;
+public class AddTool extends AppCompatActivity {
     EditText nameEditText;
     EditText urlEditText;
 
-    String cat;
     String name;
     String url;
 
@@ -25,7 +23,7 @@ public class AddToolAdmin extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_tool_admin);
+        setContentView(R.layout.activity_add_tool);
         findEditText();
         initFirebase();
     }
@@ -33,7 +31,6 @@ public class AddToolAdmin extends AppCompatActivity {
     private void findEditText() {
         nameEditText = findViewById(R.id.nameEditText);
         urlEditText = findViewById(R.id.urlEditText);
-        catEditText = findViewById(R.id.catEditText);
     }
 
     private void initFirebase() {
@@ -46,7 +43,6 @@ public class AddToolAdmin extends AppCompatActivity {
     }
 
     private void getDataFromEditText() {
-        cat = catEditText.getText().toString();
         name = nameEditText.getText().toString();
         url = urlEditText.getText().toString();
     }
@@ -59,7 +55,7 @@ public class AddToolAdmin extends AppCompatActivity {
     }
 
     private void uploadToolToPrivate(Tool tool) {
-        db.collection("cat").document(cat).collection("products").document(tool.getName()).set(tool);
+        db.collection("users").document("123").collection("tools").document(tool.getName()).set(tool);
     }
 
 
