@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout AllCalLayout;
     FirebaseAuth mFirebaseAuth;
     FirebaseAuth.AuthStateListener mAuthStateListener;
+    FirebaseUser user;
     HashMap<String, List<Tool>> expandableListDetail;
 
     List<String> allCatExpandableListTitle;
@@ -50,8 +51,16 @@ public class MainActivity extends AppCompatActivity {
 
     GridView gv;
     ArrayAdapter<String> gridViewArrayAdapter;
-    List<String> toolList;
-    List<Tool> clickToolList;
+    List<String> favToolList;
+    List<Tool> favClickToolList;
+
+    GridView pgv;
+    ArrayAdapter<String> pgridViewArrayAdapter;
+    List<String> pToolList;
+    List<Tool> pClickToolList;
+
+
+    String uid;
 
 
     @Override
@@ -60,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         gv = findViewById(R.id.favouriteAppsGrid);
+        pgv = findViewById(R.id.personalAppsGrid);
         AllCalLayout = findViewById(R.id.allCategoriesContainer);
 
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -68,7 +78,14 @@ public class MainActivity extends AppCompatActivity {
         authSignupChecker();
 
         gv.setOnItemClickListener((parent, v, position, id) -> {
-            Tool tool = clickToolList.get(position);
+            Tool tool = favClickToolList.get(position);
+            Intent intent = new Intent(MainActivity.this, ToolViewActivity.class);
+            intent.putExtra("tool", tool);
+            startActivity(intent);
+        });
+
+        pgv.setOnItemClickListener((parent, v, position, id) -> {
+            Tool tool = pClickToolList.get(position);
             Intent intent = new Intent(MainActivity.this, ToolViewActivity.class);
             intent.putExtra("tool", tool);
             startActivity(intent);
@@ -77,9 +94,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void startAuthListener() {
         mAuthStateListener = firebaseAuth -> {
-            FirebaseUser user = firebaseAuth.getCurrentUser();
+            user = firebaseAuth.getCurrentUser();
             if (user != null) {
                 //User is signed in
+                uid = user.getUid();
                 Toast.makeText(MainActivity.this, "Signed in", Toast.LENGTH_SHORT).show();
                 MainActivity.this.onSignedInInitialize();
             } else {
@@ -99,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void authSignupChecker() {
+
         if (mFirebaseAuth.getCurrentUser() == null) {
             Log.d("auth", "null user so authsignupchecker is running");
             List<AuthUI.IdpConfig> providers = Collections.singletonList(
@@ -115,18 +134,53 @@ public class MainActivity extends AppCompatActivity {
 
         } else {
             //    Toast.makeText(this, "signed in", Toast.LENGTH_SHORT).show();
+            user = mFirebaseAuth.getCurrentUser();
+            uid = user.getUid();
             onSignedInInitialize();
         }
     }
 
     private void onSignedInInitialize() {
         loadAllCatNamesFromFirebase(AllCalLayout);
-        setupToolAdapter();
+        setupFavToolAdapter();
+        setupPersonalToolAdapter();
         loadFavCategoriesAndProducts();
+        loadPersonalTool();
+    }
+
+    private void loadAllCatNamesFromFirebase(final LinearLayout layout) {
+        db.collection("cat")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            final String cat = document.getId();
+                            addCatFromFirebaseToView(cat, layout);
+                        }
+                    } else {
+                        Log.w(TAG, "Error getting documents.", task.getException());
+                    }
+                });
+    }
+
+    private void setupFavToolAdapter() {
+        favToolList = new ArrayList<String>();
+        favClickToolList = new ArrayList<Tool>();
+        gridViewArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, favToolList);
+        gv.setAdapter(gridViewArrayAdapter);
+
+    }
+
+    private void setupPersonalToolAdapter() {
+        pToolList = new ArrayList<String>();
+        pClickToolList = new ArrayList<Tool>();
+        pgridViewArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, pToolList);
+        pgv.setAdapter(pgridViewArrayAdapter);
+
     }
 
     private void loadFavCategoriesAndProducts() {
-        final DocumentReference docRef = db.collection("users").document("123");
+        final DocumentReference docRef = db.collection("users").document(uid);
         docRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot document = task.getResult();
@@ -157,6 +211,24 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void loadPersonalTool() {
+        db.collection("users").document(uid).collection("tools")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Tool tool = document.toObject(Tool.class);
+                            addToolToPView(tool);
+
+                            // TODO: 7/23/19 set the adapter
+                        }
+                    } else {
+                        Log.w(TAG, "Error getting documents.", task.getException());
+                    }
+                });
+
+    }
+
     private void loadToolFromFirebase(DocumentReference ref) {
         final DocumentReference docRef = ref;
         docRef.get().addOnCompleteListener(task -> {
@@ -165,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
                 if (document.exists()) {
                     Log.d(TAG, "DocumentSnapshot data: " + document.getData());
                     Tool tool = document.toObject(Tool.class);
-                    addToolToView(tool);
+                    addToolToFavView(tool);
                 } else {
                     Log.d(TAG, "No such document");
                 }
@@ -175,33 +247,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void setupToolAdapter() {
-        toolList = new ArrayList<String>();
-        clickToolList = new ArrayList<Tool>();
-        gridViewArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, toolList);
-        gv.setAdapter(gridViewArrayAdapter);
-
-    }
-
-    private void addToolToView(Tool tool) {
-        toolList.add(toolList.size(), tool.getName());
-        clickToolList.add(clickToolList.size(), tool);
+    private void addToolToFavView(Tool tool) {
+        favToolList.add(favToolList.size(), tool.getName());
+        favClickToolList.add(favClickToolList.size(), tool);
         gridViewArrayAdapter.notifyDataSetChanged();
     }
 
-    private void loadAllCatNamesFromFirebase(final LinearLayout layout) {
-        db.collection("cat")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            final String cat = document.getId();
-                            addCatFromFirebaseToView(cat, layout);
-                        }
-                    } else {
-                        Log.w(TAG, "Error getting documents.", task.getException());
-                    }
-                });
+    private void addToolToPView(Tool tool) {
+        pToolList.add(pToolList.size(), tool.getName());
+        pClickToolList.add(pClickToolList.size(), tool);
+        pgridViewArrayAdapter.notifyDataSetChanged();
     }
 
     private void addCatFromFirebaseToView(final String cat, final LinearLayout layout) {
@@ -346,4 +401,6 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.dispatchKeyEvent(event);
     }
+
+
 }

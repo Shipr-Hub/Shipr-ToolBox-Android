@@ -1,11 +1,13 @@
 package tech.shipr.toolboxdev.view;
 
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import tech.shipr.toolboxdev.R;
@@ -19,6 +21,8 @@ public class AddTool extends AppCompatActivity {
     String url;
 
     FirebaseFirestore db;
+
+    String uid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +39,7 @@ public class AddTool extends AppCompatActivity {
 
     private void initFirebase() {
         db = FirebaseFirestore.getInstance();
+        uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
 
     public void submit(View v) {
@@ -55,8 +60,17 @@ public class AddTool extends AppCompatActivity {
     }
 
     private void uploadToolToPrivate(Tool tool) {
-        db.collection("users").document("123").collection("tools").document(tool.getName()).set(tool);
+        db.collection("users").document(uid).collection("tools").document(tool.getName()).set(tool);
+        finish();
     }
 
-
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        int keyCode = event.getKeyCode();
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            finish();
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
+    }
 }

@@ -15,12 +15,15 @@ import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import tech.shipr.toolboxdev.R;
 import tech.shipr.toolboxdev.model.Tool;
@@ -33,7 +36,7 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
     private List<String> expandableListTitle;
     private HashMap<String, List<Tool>> expandableListDetail;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-
+    String uid = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
     public CustomExpandableListAdapter(Context context, List<String> expandableListTitle,
                                        HashMap<String, List<Tool>> expandableListDetail) {
         this.context = context;
@@ -65,30 +68,32 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         expandedListTextView.setText(mTool.getName());
         Button starButton = convertView.findViewById(R.id.starToolButton);
         starButton.setBackground(ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.btn_star_big_off));
-        starButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                // Perform action on click
-                starTool(mTool);
+        starButton.setOnClickListener(v -> {
+            // Perform action on click
+            starTool(mTool);
 
-            }
         });
         return convertView;
     }
 
     @SuppressLint("RestrictedApi")
     private void starTool(Tool mTool) {
-//        String loc = "/cat/" + mTool.getCat() + "/products/" + mTool.getKey();
-        DocumentReference starToolRef = db.collection("users").document("123");
+        DocumentReference starToolRef = db.collection("users").document(uid);
         DocumentReference toolRef = db.collection("cat").document(mTool.getCat()).collection("products").document(mTool.getKey());
+        starToolRef.set(new HashMap<>(), SetOptions.merge());
         starToolRef.update("favtool", FieldValue.arrayUnion(toolRef));
         Toast.makeText(getApplicationContext(), mTool.getName() + " added to favourites", Toast.LENGTH_SHORT).show();
         notifyDataSetChanged();
+
     }
 
     @SuppressLint("RestrictedApi")
     private void starCat(String mCat) {
-//        String loc = "/cat/" + mTool.getCat() + "/products/" + mTool.getKey();
-        DocumentReference starToolRef = db.collection("users").document("123");
+        DocumentReference starToolRef = db.collection("users").document(uid);
+        Log.d("meow", "now");
+        Log.d("cat", mCat);
+        Log.d("uid", uid);
+        starToolRef.set(new HashMap<>(), SetOptions.merge());
         starToolRef.update("favcat", FieldValue.arrayUnion(mCat));
         Toast.makeText(getApplicationContext(), mCat + " added to favourites", Toast.LENGTH_SHORT).show();
         notifyDataSetChanged();
@@ -119,8 +124,7 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
 
     @SuppressLint("RestrictedApi")
     @Override
-    public View getGroupView(int listPosition, boolean isExpanded,
-                             View convertView, ViewGroup parent) {
+    public View getGroupView(int listPosition, boolean isExpanded, View convertView, ViewGroup parent) {
         final String listTitle = (String) getGroup(listPosition);
         if (convertView == null) {
             LayoutInflater layoutInflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -133,13 +137,11 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
 
         Button starButton = convertView.findViewById(R.id.catStarButton);
         starButton.setBackground(ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.btn_star_big_off));
-        starButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                // Perform action on click
+        starButton.setOnClickListener(v -> {
+            // Perform action on click
 
-                starCat(listTitle);
+            starCat(listTitle);
 
-            }
         });
 
         return convertView;
