@@ -9,16 +9,18 @@ public class Tool implements Serializable {
     private String url;
     private String key;
     private String cat;
+    private String about;
 
     public Tool() {
     }
 
-    public Tool(String text, String name, String url, String key, String cat) {
+    public Tool(String text, String name, String url, String key, String cat, String about) {
         this.text = text;
         this.name = name;
         this.url = url;
         this.key = key;
         this.cat = cat;
+        this.about = about;
     }
 
 
@@ -38,10 +40,10 @@ public class Tool implements Serializable {
         this.url = url;
     }
 
-    public String toString(){
+    public String toString() {
         return "Name: " + name + "\n " +
                 "Url: " + url + "\n " +
-                "Text: " + text + "\n " ;
+                "Text: " + text + "\n ";
     }
 
     public String getKey() {
@@ -58,5 +60,13 @@ public class Tool implements Serializable {
 
     public void setCat(String cat) {
         this.cat = cat;
+    }
+
+    public String getAbout() {
+        return about;
+    }
+
+    public void setAbout(String about) {
+        this.about = about;
     }
 }

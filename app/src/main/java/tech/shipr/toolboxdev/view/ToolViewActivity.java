@@ -9,9 +9,9 @@ import tech.shipr.toolboxdev.R;
 import tech.shipr.toolboxdev.model.Tool;
 
 public class ToolViewActivity extends AppCompatActivity {
-    TextView textTextView;
     TextView nameTextView;
     TextView urlTextView;
+    TextView aboutTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,14 +20,15 @@ public class ToolViewActivity extends AppCompatActivity {
 
         nameTextView = findViewById(R.id.toolNameTextView);
         urlTextView = findViewById(R.id.toolUrlTextView);
-        textTextView = findViewById(R.id.toolTextTextView);
+        aboutTextView = findViewById(R.id.aboutEditText);
         Tool tool = (Tool) getIntent().getSerializableExtra("tool");
         setNameTextView(tool.getName());
         setUrlTextView(tool.getUrl());
+        setAboutTextView(tool.getAbout());
     }
 
-    private void setTextTextView(String text) {
-        textTextView.setText(text);
+    private void setAboutTextView(String about) {
+        aboutTextView.setText(about);
     }
 
     private void setNameTextView(String name) {

@@ -19,10 +19,12 @@ public class AddToolAdmin extends AppCompatActivity {
     EditText catEditText;
     EditText nameEditText;
     EditText urlEditText;
+    EditText aboutEditText;
 
     String cat;
     String name;
     String url;
+    String about;
 
     FirebaseFirestore db;
 
@@ -53,12 +55,14 @@ public class AddToolAdmin extends AppCompatActivity {
         cat = catEditText.getText().toString();
         name = nameEditText.getText().toString();
         url = urlEditText.getText().toString();
+        about = aboutEditText.getText().toString();
     }
 
     private Tool createTool() {
         Tool tool = new Tool();
         tool.setName(name);
         tool.setUrl(url);
+        tool.setAbout(about);
         return tool;
     }
 

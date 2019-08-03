@@ -16,9 +16,11 @@ import tech.shipr.toolboxdev.model.Tool;
 public class AddTool extends AppCompatActivity {
     EditText nameEditText;
     EditText urlEditText;
+    EditText aboutEditText;
 
     String name;
     String url;
+    String about;
 
     FirebaseFirestore db;
 
@@ -35,6 +37,8 @@ public class AddTool extends AppCompatActivity {
     private void findEditText() {
         nameEditText = findViewById(R.id.nameEditText);
         urlEditText = findViewById(R.id.urlEditText);
+        aboutEditText = findViewById(R.id.aboutEditText);
+
     }
 
     private void initFirebase() {
@@ -50,12 +54,15 @@ public class AddTool extends AppCompatActivity {
     private void getDataFromEditText() {
         name = nameEditText.getText().toString();
         url = urlEditText.getText().toString();
+        about = aboutEditText.getText().toString();
+
     }
 
     private Tool createTool() {
         Tool tool = new Tool();
         tool.setName(name);
         tool.setUrl(url);
+        tool.setAbout(about);
         return tool;
     }
 
